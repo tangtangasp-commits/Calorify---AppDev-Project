@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Calorify",
+    "slug": "calorify",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": { "backgroundColor": "#0f172a" },
+    "ios":     { "supportsTablet": false, "bundleIdentifier": "com.calorify.app" },
+    "android": { "adaptiveIcon": { "backgroundColor": "#0f172a" }, "package": "com.calorify.app" }
+  }
+}

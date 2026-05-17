@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CALORIFY!</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ── Auth ── -->
+  <div id="auth-screen" class="screen active">
+    <div class="auth-card">
+      <div class="logo">CALORIFY!</div>
+      <p class="tagline">Fuel your body right</p>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="showTab('login')">Login</button>
+        <button class="tab-btn"        onclick="showTab('register')">Register</button>
+      </div>
+      <div id="login-form">
+        <label>Email</label><input type="email" id="login-email" placeholder="you@email.com" />
+        <label>Password</label><input type="password" id="login-password" placeholder="••••••••" />
+        <button class="btn-primary" onclick="login()">Sign In</button>
+      </div>
+      <div id="register-form" class="hidden">
+        <div class="grid-2">
+          <div><label>Name</label><input id="reg-name" placeholder="Supakrit" /></div>
+          <div><label>Age</label><input id="reg-age" type="number" placeholder="22" /></div>
+        </div>
+        <label>Email</label><input id="reg-email" type="email" placeholder="you@email.com" />
+        <label>Password</label><input id="reg-password" type="password" placeholder="••••••••" />
+        <div class="grid-2">
+          <div><label>Weight (kg)</label><input id="reg-weight" type="number" placeholder="70" /></div>
+          <div><label>Height (cm)</label><input id="reg-height" type="number" placeholder="175" /></div>
+        </div>
+        <div class="grid-2">
+          <div><label>Sex</label><select id="reg-sex"><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div><label>Activity</label><select id="reg-activity">
+            <option value="sedentary">Sedentary</option><option value="light">Light</option>
+            <option value="moderate">Moderate</option><option value="active">Active</option>
+          </select></div>
+        </div>
+        <label>Goal</label>
+        <div class="goal-row">
+          <button class="goal-btn active" data-goal="loss"     onclick="selectGoal(this)">Weight Loss</button>
+          <button class="goal-btn"        data-goal="maintain" onclick="selectGoal(this)">Maintain</button>
+          <button class="goal-btn"        data-goal="gain"     onclick="selectGoal(this)">Muscle Gain</button>
+        </div>
+        <button class="btn-primary" onclick="register()">Create Account →</button>
+      </div>
+      <div id="auth-error" class="error-msg hidden"></div>
+    </div>
+  </div>
+
+  <!-- ── App ── -->
+  <div id="app-screen" class="screen hidden">
+    <nav id="navbar">
+      <span class="logo">CALORIFY!</span>
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="navigate('dashboard')">Dashboard</button>
+        <button class="nav-btn"        onclick="navigate('log')">Log Meal</button>
+        <button class="nav-btn"        onclick="navigate('history')">History</button>
+        <button class="nav-btn"        onclick="navigate('analytics')">Analytics</button>
+        <button class="nav-btn"        onclick="navigate('profile')">Profile</button>
+      </div>
+      <button class="btn-ghost" onclick="logout()">Logout</button>
+    </nav>
+
+    <!-- ── Dashboard ── -->
+    <section id="page-dashboard" class="page active">
+      <div class="greeting">
+        <div class="greeting-sub">Good day,</div>
+        <div class="greeting-name" id="dash-name">—</div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Today's Progress</div>
+        <div class="ring-row">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 120 120" class="ring-svg">
+              <circle cx="60" cy="60" r="48" class="ring-bg" />
+              <circle cx="60" cy="60" r="48" class="ring-fg" id="ring-circle" />
+            </svg>
+            <div class="ring-text"><span id="ring-pct">0%</span><small>of max</small></div>
+          </div>
+          <div class="ring-info">
+            <div class="big-num" id="dash-cal-consumed">0</div>
+            <div class="muted small" id="dash-cal-range">— kcal target</div>
+            <div class="accent" id="dash-cal-remaining">—</div>
+          </div>
+        </div>
+
+        <!-- All 5 macros with min/max bars -->
+        <div class="progress-group">
+          <div class="macro-row-label"><span>🔥 Calories</span><div id="prog-cal-label" class="macro-label-vals"></div></div>
+          <div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill accent-fill" id="prog-cal"></div></div><div class="min-marker" id="prog-cal-min"></div></div>
+
+          <div class="macro-row-label"><span>💪 Protein</span><div id="prog-pro-label" class="macro-label-vals"></div></div>
+          <div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill green-fill" id="prog-pro"></div></div><div class="min-marker" id="prog-pro-min"></div></div>
+
+          <div class="macro-row-label"><span>🌾 Carbs</span><div id="prog-carbs-label" class="macro-label-vals"></div></div>
+          <div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill yellow-fill" id="prog-carbs"></div></div><div class="min-marker" id="prog-carbs-min"></div></div>
+
+          <div class="macro-row-label"><span>🥑 Fat</span><div id="prog-fat-label" class="macro-label-vals"></div></div>
+          <div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill orange-fill" id="prog-fat"></div></div><div class="min-marker" id="prog-fat-min"></div></div>
+
+          <div class="macro-row-label"><span>🌿 Fiber</span><div id="prog-fib-label" class="macro-label-vals"></div></div>
+          <div class="progress-bar-wrap"><div class="progress-bar"><div class="progress-fill purple-fill" id="prog-fib"></div></div><div class="min-marker" id="prog-fib-min"></div></div>
+        </div>
+
+        <div class="min-marker-legend"><span class="min-marker-dot"></span><span class="muted small">Minimum goal marker</span></div>
+      </div>
+
+      <div class="card" id="recommendations"></div>
+      <button class="btn-primary full-width" onclick="navigate('log')">+ Log a Meal</button>
+    </section>
+
+    <!-- ── Log Meal ── -->
+    <section id="page-log" class="page hidden">
+
+      <!-- Date selector -->
+      <div class="card log-date-bar">
+        <div class="log-date-label-row">
+          <span class="muted small">Logging for</span>
+          <span id="log-date-display" class="log-date-display">Today</span>
+        </div>
+        <div class="log-date-controls">
+          <button class="log-date-arrow" onclick="shiftLogDate(-1)" title="Previous day">‹</button>
+          <input type="date" id="log-date-picker" onchange="onLogDateChange(this.value)"
+            style="flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;
+                   padding:7px 10px;color:var(--text);font-size:13px;outline:none;text-align:center" />
+          <button class="log-date-arrow" onclick="shiftLogDate(1)" title="Next day">›</button>
+          <button class="log-date-today" onclick="resetLogDateToToday()">Today</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:12px 16px;margin-bottom:0;border-radius:16px 16px 0 0;margin-top:0">
+        <div class="tab-row" style="margin:0">
+          <button class="tab-btn active" id="mode-search-btn" onclick="setLogMode('search')">🔍 Search Food</button>
+          <button class="tab-btn"        id="mode-manual-btn" onclick="setLogMode('manual')">✏️ Enter Manually</button>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div id="log-mode-search" class="card" style="border-radius:0 0 16px 16px;margin-top:0">
+        <div class="meal-type-row">
+          <button class="meal-type-btn active" data-type="Breakfast">Breakfast</button>
+          <button class="meal-type-btn" data-type="Lunch">Lunch</button>
+          <button class="meal-type-btn" data-type="Dinner">Dinner</button>
+          <button class="meal-type-btn" data-type="Snack">Snack</button>
+        </div>
+        <label>Search Food</label>
+        <input id="food-search" placeholder="e.g. chicken, banana, rice..." oninput="onFoodSearch(this.value)" />
+        <div id="search-status" class="muted small"></div>
+        <div id="food-results" class="food-results hidden"></div>
+        <div id="food-selected" class="hidden">
+          <div class="selected-food-card">
+            <span id="selected-name"></span>
+            <button class="btn-ghost small" onclick="clearSelection()">✕ change</button>
+          </div>
+          <label>Portion (grams)</label>
+          <input id="portion-grams" type="number" value="100" min="1" oninput="updateCalc()" />
+          <div class="macro-preview">
+            <div class="macro-item"><span id="calc-cal"   class="accent">0</span><small>kcal</small></div>
+            <div class="macro-item"><span id="calc-pro"   class="green">0</span><small>protein</small></div>
+            <div class="macro-item"><span id="calc-carbs" class="yellow">0</span><small>carbs</small></div>
+            <div class="macro-item"><span id="calc-fat"   style="color:var(--orange,#fb923c)">0</span><small>fat</small></div>
+            <div class="macro-item"><span id="calc-fib"   style="color:var(--purple,#a78bfa)">0</span><small>fiber</small></div>
+          </div>
+          <button class="btn-primary full-width" onclick="logMeal()">Add to Log ✓</button>
+        </div>
+        <p class="muted small" style="margin-top:14px;text-align:center">
+          Can't find it? <a href="#" onclick="setLogMode('manual');return false;" style="color:var(--accent)">Enter manually →</a>
+        </p>
+      </div>
+
+      <!-- Manual -->
+      <div id="log-mode-manual" class="card hidden" style="border-radius:0 0 16px 16px;margin-top:0">
+        <div class="meal-type-row">
+          <button class="meal-type-btn-m active" data-type="Breakfast">Breakfast</button>
+          <button class="meal-type-btn-m" data-type="Lunch">Lunch</button>
+          <button class="meal-type-btn-m" data-type="Dinner">Dinner</button>
+          <button class="meal-type-btn-m" data-type="Snack">Snack</button>
+        </div>
+        <label>Food Name</label><input id="manual-name" placeholder="e.g. Croissant, Pad Kra Pao..." />
+        <label>Portion (grams)</label><input id="manual-grams" type="number" placeholder="100" min="1" />
+        <div class="grid-2" style="margin-top:4px">
+          <div><label>Calories (kcal)</label><input id="manual-cal"   type="number" placeholder="0" min="0" /></div>
+          <div><label>Protein (g)</label>   <input id="manual-pro"   type="number" placeholder="0" min="0" step="0.1" /></div>
+        </div>
+        <div class="grid-2">
+          <div><label>Carbs (g)</label><input id="manual-carbs" type="number" placeholder="0" min="0" step="0.1" /></div>
+          <div><label>Fat (g)</label>  <input id="manual-fat"   type="number" placeholder="0" min="0" step="0.1" /></div>
+        </div>
+        <div class="grid-2">
+          <div><label>Fiber (g)</label><input id="manual-fib"   type="number" placeholder="0" min="0" step="0.1" /></div>
+        </div>
+        <div id="manual-error" class="error-msg hidden" style="margin-top:8px"></div>
+        <button class="btn-primary full-width" style="margin-top:16px" onclick="logMealManual()">Add to Log ✓</button>
+      </div>
+    </section>
+
+    <!-- ── History ── -->
+    <section id="page-history" class="page hidden">
+      <div class="card">
+        <div class="section-label">Browse by Day</div>
+        <div id="history-date-list"></div>
+      </div>
+      <div class="card">
+        <div class="history-date-label-title" id="history-date-label">Today</div>
+        <div id="meal-history-list"><p class="muted centered">No meals logged yet.</p></div>
+        <div id="meal-totals" class="totals-bar hidden"></div>
+      </div>
+    </section>
+
+    <!-- ── Analytics ── -->
+    <section id="page-analytics" class="page hidden">
+      <!-- 7-day chart -->
+      <div class="card">
+        <h2>7-Day Chart</h2>
+        <div class="metric-tabs">
+          <button class="metric-btn active" onclick="switchMetric('calories',this)">Calories</button>
+          <button class="metric-btn" onclick="switchMetric('protein',this)">Protein</button>
+          <button class="metric-btn" onclick="switchMetric('carbs',this)">Carbs</button>
+          <button class="metric-btn" onclick="switchMetric('fat',this)">Fat</button>
+          <button class="metric-btn" onclick="switchMetric('fiber',this)">Fiber</button>
+        </div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="section-label">Avg. Calories</div><div class="big-num accent" id="avg-cal">—</div><div class="muted small">kcal / day</div></div>
+        <div class="card"><div class="section-label">Avg. Protein</div><div class="big-num green" id="avg-pro">—</div><div class="muted small">g / day</div></div>
+      </div>
+
+      <!-- Weekly / Monthly summary -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0">Summary</h2>
+          <div style="display:flex;gap:6px">
+            <button class="summary-tab-btn active" onclick="setSummaryView('weekly',this)">This Week</button>
+            <button class="summary-tab-btn"        onclick="setSummaryView('monthly',this)">This Month</button>
+          </div>
+        </div>
+        <div id="summary-content"><p class="muted centered" style="padding:24px">Log meals to see your summary.</p></div>
+      </div>
+    </section>
+
+    <!-- ── Profile ── -->
+    <section id="page-profile" class="page hidden">
+      <div class="card"><h2>Your Profile</h2><div id="profile-details"></div></div>
+      <div class="card">
+        <div class="section-label">Daily Target Ranges (Min – Max)</div>
+        <div id="target-details"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
